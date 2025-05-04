@@ -78,7 +78,7 @@ fi
 
 # Default value for wifi_simulation if no argument is provided
 wifi_simulation=""
-
+start_kali="false"
 # Process command-line arguments
 for arg in "$@"
 do
@@ -90,6 +90,10 @@ do
         --no-wifi)
         wifi_simulation="n"
         shift # Remove --no-wifi from processing
+        ;;
+        --kali)
+        start_kali="true"
+        shift
         ;;
         -h|--help)
         show_help
@@ -213,6 +217,7 @@ if [ "$wifi_simulation" = "y" ]; then
     # Make sure we are running as root
     WIFI_ENABLED="True"
     export WIFI_ENABLED
+    export START_KALI=$start_kali
     if [ "$EUID" -ne 0 ]; then
         echo "To deploy virtual wifi you must run this script with sudo privileges."
         echo "Please run it again with 'sudo ./start.sh'"
@@ -228,10 +233,10 @@ if [ "$wifi_simulation" = "y" ]; then
 
         # Start Docker Compose
         echo -e "${CYAN}[+] Starting Docker Pull...${NC}"
-        docker compose pull
+        docker compose --profile ${START_KALI:+kali} pull
 
         echo -e "${CYAN}[+] Starting Docker Build...${NC}"
-        docker compose build
+        docker compose --profile ${START_KALI:+kali} build
 
         # Print current time
         echo -e "${CYAN}[+] Starting Docker Lab Environment - $(date)${NC}"
@@ -265,10 +270,10 @@ if [ "$wifi_simulation" = "y" ]; then
 
         # Start Docker Compose
         echo -e "${CYAN}[+] Starting Docker Compose...${NC}"
-        docker compose up -d
+        docker compose --profile ${START_KALI:+kali} up
 
         echo -e "${CYAN}[+] Fetching Docker Compose logs...${NC}"
-        docker compose logs -f &
+        docker compose --profile ${START_KALI:+kali} logs -f &
 
         # Wait for Docker containers to start up
         # Check for Docker containers readiness
@@ -434,12 +439,13 @@ echo """
 elif [ "$wifi_simulation" = "n" ]; then
     WIFI_ENABLED="False"
     export WIFI_ENABLED
+    export START_KALI=$start_kali
     LOG_FILE="dvd.log"
     {
         echo -e "${CYAN}Starting simulation assuming drone network connectivity access..."
         echo -e "${CYAN}[+] Starting Docker Compose...${NC}"
-        docker compose up --build -d
-        docker compose logs -f &
+        docker compose --profile ${START_KALI:+kali} up --build -d
+        docker compose --profile ${START_KALI:+kali} logs -f &
         echo """
 .--------------------------------------------------------------------------------.
          .###+             .#####               ####+             .####          
