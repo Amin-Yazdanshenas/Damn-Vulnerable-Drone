@@ -220,6 +220,7 @@ Options:
 Example:
   sudo ./start.sh --wifi      # Starts with virtual Wi-Fi
   sudo ./start.sh --no-wifi   # Starts without virtual Wi-Fi
+  sudo ./start.sh --wifi --kali   # Starts virtual Wi-Fi and kali linux
 ```
 
 #### Stop
